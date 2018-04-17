@@ -65,7 +65,7 @@ void pinB_ISR(){
 void receiveEvent(int howMany) {
   I2C_readAnything(targetEncoderPosition);
   I2C_readAnything(rpm);
-  VESCrpm = (float)((rpm - 127) / 18.1428) 
+  VESCrpm = (rpm - 127) / 18.1428 
   targetEncoderPosition = (int)(targetEncoderPosition * 1.111111);
 }
 
