@@ -26,7 +26,7 @@ unsigned long pulseDelayMicros = 2000;
 long distanceToTarget = 0;
 volatile int targetEncoderPosition = 199;
 volatile int rpm = 0;
-
+float VESCrpm = 0;
 void setup() {
   // put your setup code here, to run once:
   //Serial.begin(9600);
@@ -65,6 +65,7 @@ void pinB_ISR(){
 void receiveEvent(int howMany) {
   I2C_readAnything(targetEncoderPosition);
   I2C_readAnything(rpm);
+  VESCrpm = (float)((rpm - 127) / 18.1428) 
   targetEncoderPosition = (int)(targetEncoderPosition * 1.111111);
 }
 
@@ -82,6 +83,6 @@ void loop() {
     }
     digitalWrite(pin_STEP, HIGH);
     digitalWrite(pin_STEP, LOW);
-	VescUartSetCurrent(rpm);
+	VescUartSetCurrent(VESCrpm);
   }
 }
