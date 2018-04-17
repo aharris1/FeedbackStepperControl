@@ -1,3 +1,8 @@
+#include "VescUart.h"
+#include "datatypes.h"
+#include "local_datatypes.h"
+
+
 #include <I2C_Anything.h>
 
 #include <Wire.h>
@@ -20,6 +25,7 @@ unsigned long pulseDelayMicros = 2000;
 
 long distanceToTarget = 0;
 volatile int targetEncoderPosition = 199;
+volatile int rpm = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -58,6 +64,7 @@ void pinB_ISR(){
 
 void receiveEvent(int howMany) {
   I2C_readAnything(targetEncoderPosition);
+  I2C_readAnything(rpm);
   targetEncoderPosition = (int)(targetEncoderPosition * 1.111111);
 }
 
@@ -75,6 +82,6 @@ void loop() {
     }
     digitalWrite(pin_STEP, HIGH);
     digitalWrite(pin_STEP, LOW);
-    delayMicroseconds(125);
+	VescUartSetCurrent(rpm);
   }
 }
