@@ -76,15 +76,20 @@ void loop() {
   distanceToTarget = targetEncoderPosition - counter;
 //  Serial.println(targetEncoderPosition);
   // put your main code here, to run repeatedly:
-  if(abs(distanceToTarget) > 1){
-    if(distanceToTarget > 0){
-      digitalWrite(pin_DIR, LOW);
+  if(micros()-lastPulseMicros > 500)
+  {
+    if(abs(distanceToTarget) > 1){
+      if(distanceToTarget > 0){
+        digitalWrite(pin_DIR, LOW);
+      }
+      else{
+        digitalWrite(pin_DIR, HIGH);
+      }
+      digitalWrite(pin_STEP, HIGH);
+      delayMicroseconds(1);
+      digitalWrite(pin_STEP, LOW);
+      lastPulseMicros=micros();
     }
-    else{
-      digitalWrite(pin_DIR, HIGH);
-    }
-    digitalWrite(pin_STEP, HIGH);
-    digitalWrite(pin_STEP, LOW);
-	VescUartSetCurrent(VESCrpm);
   }
+  
 }
