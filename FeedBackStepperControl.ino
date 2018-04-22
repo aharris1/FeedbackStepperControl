@@ -13,12 +13,14 @@
 #define pinA 2
 #define pinB 3
 #define STEPS_PER_REV 400
+#define STEP_TOLERANCE 6
+#define STEP_DELAY 500
 PinIO readPinA(pinA);
 PinIO readPinB(pinB);
 
 int counter;
 
-bool runOnce = true;
+bool turnRight = true; //Initialized with arbitrary value
 
 unsigned long lastPulseMicros = 0;
 unsigned long pulseDelayMicros = 2000;
@@ -44,6 +46,7 @@ void setup() {
   pinMode(pin_DIR, OUTPUT);
   digitalWrite(A4, LOW);
   digitalWrite(A5, LOW);
+  
   distanceToTarget = targetEncoderPosition - counter;
 //  Serial.println(distanceToTarget);
 }
@@ -73,21 +76,36 @@ void receiveEvent(int howMany) {
 
 
 void loop() {
-  distanceToTarget = targetEncoderPosition - counter%STEPS_PER_REV;
+  distanceToTarget = targetEncoderPosition - (counter%STEPS_PER_REV);
+  //Sets turnRight based on the raw difference  
+  if(distanceToTarget > STEP_TOLERANCE){
+    turnRight = true;
+  }
+  else if(distanceToTarget < -1* STEP_TOLERANCE){
+    turnRight = false;
+  }
+  
+  //Inverts turn right if it would be easier to turn the other way
+  if(abs(distanceToTarget) > 180){
+    turnRight = !turnRight;
+    //TODO: VESCrpm = -VESCrpm;
+  }
+  //Sets the direction pin according to the direction required
+  if(turnRight){
+    digitalWrite(pin_DIR, HIGH);
+  }
+  else{
+    digitalWrite(pin_DIR, LOW);
+  }
 //  Serial.println(targetEncoderPosition);
   // put your main code here, to run repeatedly:
-  if(micros()-lastPulseMicros > 500)
+  if(micros()-lastPulseMicros > STEP_DELAY)
   {
-    if(abs(distanceToTarget) > 1){
-      if(distanceToTarget > 0){
-        digitalWrite(pin_DIR, HIGH);
-      }
-      else{
-        digitalWrite(pin_DIR, LOW);
-      }
+    //Steps when it has been at least as long as the step delay
+    if(abs(distanceToTarget) > STEP_TOLERANCE){
       digitalWrite(pin_STEP, HIGH);
       delayMicroseconds(1);
-      digitalWrite(pin_STEP, LOW);
+      digitalWrite(pin_DIR, LOW);
       lastPulseMicros=micros();
     }
   }
