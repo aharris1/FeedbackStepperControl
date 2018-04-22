@@ -17,6 +17,7 @@ PinIO readPinA(pinA);
 PinIO readPinB(pinB);
 
 int counter;
+int stepper = 0;
 
 bool runOnce = true;
 
@@ -24,20 +25,22 @@ unsigned long lastPulseMicros = 0;
 unsigned long pulseDelayMicros = 2000;
 
 long distanceToTarget = 0;
-volatile int targetEncoderPosition = 199;
+volatile int targetInDegrees = 360;
+int targetEncoderPosition = 0;
 volatile int rpm = 0;
+int rollingAvg = 0;
+int rollingAvgInterval = 5; //number of measurements for rolling average to span
 float VESCrpm = 0;
 void setup() {
   // put your setup code here, to run once:
-  //Serial.begin(9600);
-  Wire.begin(8);                // join i2c bus with address #8
-  Wire.onReceive(receiveEvent); // register event
-//  Serial.begin(9600);
-
+  Serial.begin(9600);
+  //Wire.begin(8);                // join i2c bus with address #8
+  //Wire.onReceive(receiveEvent); // register event
+  
   pinMode(pinA, INPUT);
-  pinMode(pinB, INPUT);
+  //pinMode(pinB, INPUT);
   attachInterrupt(0, pinA_ISR, RISING);
-  attachInterrupt(1, pinB_ISR, RISING);
+//  attachInterrupt(1, pinB_ISR, RISING);
   counter = 0;
   //Sets stepper control pins to outputs
   pinMode(pin_STEP, OUTPUT);
@@ -53,43 +56,83 @@ void pinA_ISR(){
   if(readPinB.read() == 0){
     counter--; //increments the times that pin A leads
   }
+  else
+  {
+    counter++;
+  }
 }
 
+
+/*
 void pinB_ISR(){
   if(readPinA.read() == 0){
     counter++; //Increments the times that pin B leads
   }
   
 }
+*/
 
-
-
+/*
 void receiveEvent(int howMany) {
-  I2C_readAnything(targetEncoderPosition);
+  sei();
+  //I2C_readAnything(targetInDegrees);
   I2C_readAnything(rpm);
-  VESCrpm = (rpm - 127) / 18.1428 
-  targetEncoderPosition = (int)(targetEncoderPosition * 1.111111);
+  //targetEncoderPosition = 400;
 }
-
+*/
 
 void loop() {
+  VESCrpm = (rpm - 127) / 18.1428; 
+//  targetEncoderPosition = (int)(targetInDegrees * 1.111111);
+  targetEncoderPosition = 400;
   distanceToTarget = targetEncoderPosition - counter;
-//  Serial.println(targetEncoderPosition);
-  // put your main code here, to run repeatedly:
-  if(micros()-lastPulseMicros > 500)
+  rollingAvg = rollingAvg * .99 + counter * .01;
+  Serial.println(counter);
+  /*
+  if(stepper%10 == 0)
   {
-    if(abs(distanceToTarget) > 1){
+  Serial.print("Current Position: ");
+  Serial.println(counter);
+  Serial.print("Destination: ");
+  Serial.println(targetEncoderPosition);
+  }
+  */
+//    VescUartSetCurrent(VESCrpm);
+
+/*
+if (Wire.available())
+{
+  I2C_readAnything(targetEncoderPosition);
+}
+*/
+ 
+  if(counter >= 398 && counter <= 402){
+    digitalWrite(13, HIGH);
+  }
+  else{
+    digitalWrite(13, LOW);
+  }
+    
+//    if(abs(distanceToTarget) > 7)
+//    {
+//      digitalWrite(13, HIGH);
+//    }
+
       if(distanceToTarget > 0){
-        digitalWrite(pin_DIR, LOW);
-      }
-      else{
         digitalWrite(pin_DIR, HIGH);
       }
+      else{
+        digitalWrite(pin_DIR, LOW);
+      }
+    if(abs(distanceToTarget) > 1){
+
       digitalWrite(pin_STEP, HIGH);
       delayMicroseconds(1);
       digitalWrite(pin_STEP, LOW);
-      lastPulseMicros=micros();
+      delayMicroseconds(5000);
+      stepper++;
+      //digitalWrite(13, LOW);
     }
-  }
+  
   
 }
