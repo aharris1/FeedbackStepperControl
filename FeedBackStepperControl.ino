@@ -12,7 +12,7 @@
 #define pin_DIR 12
 #define pinA 2
 #define pinB 3
-
+#define STEPS_PER_REV 400
 PinIO readPinA(pinA);
 PinIO readPinB(pinB);
 
@@ -67,23 +67,23 @@ void pinB_ISR(){
 void receiveEvent(int howMany) {
   I2C_readAnything(targetEncoderPosition);
   I2C_readAnything(rpm);
-  VESCrpm = (rpm - 127) / 18.1428 
-  targetEncoderPosition = (int)(targetEncoderPosition * 1.111111);
+  VESCrpm = (rpm - 127) / 18.1428; 
+  targetEncoderPosition = ((int)(targetEncoderPosition * STEPS_PER_REV / 360.0))%STEPS_PER_REV;
 }
 
 
 void loop() {
-  distanceToTarget = targetEncoderPosition - counter;
+  distanceToTarget = targetEncoderPosition - counter%STEPS_PER_REV;
 //  Serial.println(targetEncoderPosition);
   // put your main code here, to run repeatedly:
   if(micros()-lastPulseMicros > 500)
   {
     if(abs(distanceToTarget) > 1){
       if(distanceToTarget > 0){
-        digitalWrite(pin_DIR, LOW);
+        digitalWrite(pin_DIR, HIGH);
       }
       else{
-        digitalWrite(pin_DIR, HIGH);
+        digitalWrite(pin_DIR, LOW);
       }
       digitalWrite(pin_STEP, HIGH);
       delayMicroseconds(1);
