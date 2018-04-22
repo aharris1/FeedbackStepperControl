@@ -42,6 +42,8 @@ void setup() {
   //Sets stepper control pins to outputs
   pinMode(pin_STEP, OUTPUT);
   pinMode(pin_DIR, OUTPUT);
+  digitalWrite(A4, LOW);
+  digitalWrite(A5, LOW);
   distanceToTarget = targetEncoderPosition - counter;
 //  Serial.println(distanceToTarget);
 }
