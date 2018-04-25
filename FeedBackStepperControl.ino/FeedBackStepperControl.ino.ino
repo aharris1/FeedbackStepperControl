@@ -1,3 +1,5 @@
+#include <avdweb_scope.h>
+
 
 
 
@@ -103,8 +105,8 @@ void loop() {
     if (abs(distanceToTarget) > 4) {
 
       fastDigitalWrite(pin_STEP, HIGH);
-      delayMicroseconds(5);
+      delayMicroseconds(1500);
       fastDigitalWrite(pin_STEP, LOW);
     }
-    delayMicroseconds(250);
+    delayMicroseconds(1500);
 }
