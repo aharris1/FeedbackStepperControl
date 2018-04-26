@@ -1,8 +1,3 @@
-#include <avdweb_scope.h>
-
-
-
-
 #include <I2C_Anything.h>
 
 #include <Wire.h>
@@ -35,7 +30,7 @@ volatile int counterB = 0;
 
 void setup() {
   // put your setup code here, to run once:
-  //Serial.begin(9600);
+  Serial.begin(9600);
   Wire.begin(8);                // join i2c bus with address #8
   Wire.onReceive(receiveEvent); // register event
 
@@ -82,9 +77,9 @@ void pinA_ISR(){
   I2C_readAnything(rpm);
   //targetEncoderPosition = 400;
   }
-
-
+  bool lastDirHigh = true;
 void loop() {
+  
   if(abs(counterA - counterB) > 2){
     digitalWrite(13, HIGH);
     delayMicroseconds(500);
@@ -97,16 +92,23 @@ void loop() {
   
   if (distanceToTarget > 0) {
     fastDigitalWrite(pin_DIR, HIGH);
+    lastDirHigh = true;
+    if(!lastDirHigh){
+    delayMicroseconds(50);
+    }
   }
   else {
    fastDigitalWrite(pin_DIR, LOW);
+   lastDirHigh = false;
+   if(lastDirHigh){
+   delayMicroseconds(50);
+   }
   }
   
-    if (abs(distanceToTarget) > 4) {
+    if (abs(distanceToTarget) > 1) {
 
       fastDigitalWrite(pin_STEP, HIGH);
       delayMicroseconds(1500);
       fastDigitalWrite(pin_STEP, LOW);
     }
-    delayMicroseconds(1500);
 }
